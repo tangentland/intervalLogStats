@@ -1,0 +1,35 @@
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  resourcedetectionprocessor:
+  attributesprocessor:
+#  transform/logs:
+#    log_statements:
+#      - context: log
+#        statements:
+#          - set(attributes["exemplar"], attributes["fingerprint"]["exemplar"]) where attributes["fingerprint"]["exemplar"] != nil
+
+exporters:
+  # NOTE: Prior to v0.86.0 use the `logging` instead of `debug`.
+  debug:
+
+connectors:
+  example:
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [example]
+    metrics:
+      receivers: [example]
+      exporters: [debug]
+
