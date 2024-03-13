@@ -1,4 +1,4 @@
-type: count
+type: intervalLogStats
 #scope_name: otelcol/intervalLogStats
 
 status:

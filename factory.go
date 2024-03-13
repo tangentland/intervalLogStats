@@ -1,5 +1,7 @@
 package intervalLogStats
 
+//go:generate mdatagen metadata.yaml
+
 import (
 	"context"
 	"github.com/tangentland/intervalLogStats/internal/metadata"
