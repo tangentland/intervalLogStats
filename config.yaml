@@ -2,13 +2,30 @@
 receivers:
   otlp:
     protocols:
-      grpc:
-        endpoint: 0.0.0.0:4317
       http:
+        # Bind to 0.0.0.0 to allow for `kubectl port-forward` to work
+        # This may be susceptible to denial of service attacks - CWE-1327 https://cwe.mitre.org/data/definitions/1327.html
         endpoint: 0.0.0.0:4318
-
+        # Since this collector needs to receive data from the web, enable cors for all origins
+        # `allowed_origins` can be refined for your deployment domain
+        cors:
+          allowed_origins:
+            - "http://*"
+            - "https://*"
 processors:
   batch:
+  transform:
+    metric_statements:
+      - context: metric
+        statements:
+          - set(description, "Measures the duration of inbound HTTP requests") where name == "http.server.duration"
+  # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/826
+  filter/ottl:
+    error_mode: ignore
+    metrics:
+      metric:
+        - 'name == "queueSize"'
+
 #  resourcedetectionprocessor:
 #  attributesprocessor:
 #  transform/logs:
@@ -20,17 +37,34 @@ processors:
 exporters:
   # NOTE: Prior to v0.86.0 use the `logging` instead of `debug`.
   debug:
+  otlp:
+    endpoint: '{{ include "otel-demo.name" . }}-jaeger-collector:4317'
+    tls:
+      insecure: true
+  # Create an exporter to Prometheus (metrics)
+  prometheus:
+    endpoint: "0.0.0.0:9464"
+    resource_to_telemetry_conversion:
+      enabled: true
+    enable_open_metrics: true
 
 connectors:
   intervalLogStats:
+  spanmetrics:
 
 service:
   pipelines:
-    traces:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [intervalLogStats]
+    logs:
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ intervalLogStats ]
     metrics:
+      receivers: [ otlp, spanmetrics ]
+      processors: [ memory_limiter, filter/ottl, transform, batch ]
+      exporters: [ prometheus, logging ]
+    metrics/logs:
       receivers: [intervalLogStats]
       exporters: [debug]
-
+    traces:
+      processors: [ memory_limiter, batch ]
+      exporters: [ otlp, logging, spanmetrics ]
