@@ -15,9 +15,14 @@ receivers:
 processors:
   batch:
   transform:
+    log_statements:
+      - context: log
+        statements:
+         - set(attributes["service"], resource["service"]["name"] where resource["service"]["name"] != nil
     metric_statements:
       - context: metric
         statements:
+          - set(attributes["service"], resource["service"]["name"] where resource["service"]["name"] != nil
           - set(description, "Measures the duration of inbound HTTP requests") where name == "http.server.duration"
   # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/826
   filter/ottl:
@@ -29,11 +34,7 @@ processors:
 #  resourcedetectionprocessor:
 #  attributesprocessor:
 #  transform/logs:
-#    log_statements:
-#      - context: log
-#        statements:
-#          - set(attributes["exemplar"], attributes["fingerprint"]["exemplar"]) where attributes["fingerprint"]["exemplar"] != nil
-
+#
 exporters:
   # NOTE: Prior to v0.86.0 use the `logging` instead of `debug`.
   debug:
