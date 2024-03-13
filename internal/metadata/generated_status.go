@@ -9,7 +9,13 @@ import (
 )
 
 var (
-	Type = component.MustNewType("count")
+	Type = component.MustNewType("intervalLogStats")
+)
+
+const (
+	LogsStability    = component.StabilityLevelDevelopment
+	TracesStability  = component.StabilityLevelBeta
+	MetricsStability = component.StabilityLevelStable
 )
 
 const (

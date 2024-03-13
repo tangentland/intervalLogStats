@@ -1,14 +1,28 @@
 package intervalLogStats
 
+import (
+	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottllog"
+	"go.opentelemetry.io/collector/component"
+	"go.opentelemetry.io/collector/connector"
+	"go.opentelemetry.io/collector/consumer"
+)
+
 //go:generate mdatagen metadata.yaml
+
+scope_name: otelcol/intervalLogStats
 
 import (
 	"context"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl"
 	"github.com/tangentland/intervalLogStats/internal/metadata"
 
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/connector"
 	"go.opentelemetry.io/collector/consumer"
+
+	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/filter/filterottl"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottllog"
 )
 
 const (
@@ -24,7 +38,8 @@ func NewFactory() connector.Factory {
 	return connector.NewFactory(
 		typeStr,
 		createDefaultConfig,
-		connector.WithLogsToMetrics(createLogsToMetrics, metadata.LogsToMetricsStability)
+		connector.WithLogsToMetrics(createLogsToMetrics, 3),
+	)
 }
 
 func createDefaultConfig() component.Config {
@@ -33,15 +48,17 @@ func createDefaultConfig() component.Config {
 	}
 }
 
-
 // createLogsToMetrics creates a logs to metrics connector based on provided config.
 func createLogsToMetrics(
-	_ context.Context,
-	set connector.CreateSettings,
+	ctx context.Context,
+	params connector.CreateSettings,
 	cfg component.Config,
 	nextConsumer consumer.Metrics,
 ) (connector.Logs, error) {
-	c := cfg.(*Config)
+	c, err := newConnector(set.Logger, cfg)
+	if err != nil {
+		return nil, err
+	}
 
 	metricDefs := make(map[string]metricDef[ottllog.TransformContext], len(c.Logs))
 	for name, info := range c.Logs {

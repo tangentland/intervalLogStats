@@ -3,7 +3,7 @@
 
 package intervalLogStats //
 
-//const scopeName = "otelcol/intervalLogStats"
+const scopeName = "otelcol/intervalLogStats"
 
 import (
 	"context"
