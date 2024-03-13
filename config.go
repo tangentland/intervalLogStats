@@ -2,10 +2,7 @@ package intervalLogStats
 
 import (
 	"fmt"
-
 	"go.opentelemetry.io/collector/confmap"
-	//"github.com/open-telemetry/opentelemetry-collector-contrib/internal/filter/filterottl"
-	//"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl"
 )
 
 // Default metrics are emitted if no conditions are specified.
