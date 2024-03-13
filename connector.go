@@ -1,6 +1,6 @@
 package intervalLogStats
 
-const scopeName = "otelcol/intervalLogStats"
+//const scopeName = "otelcol/intervalLogStats"
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/consumer"
 	"go.opentelemetry.io/collector/pdata/pmetric"
-
 )
 
 // schema for connector
@@ -38,7 +37,6 @@ func newConnector(logger *zap.Logger, config component.Config) (*connectorImp, e
 		logger: logger,
 	}, nil
 }
-
 
 // Capabilities implements the consumer interface.
 func (c *connectorImp) Capabilities() consumer.Capabilities {
@@ -83,4 +81,3 @@ func (c *connectorImp) ConsumeLogs(ctx context.Context, ld plog.Logs) error {
 	}
 	return c.metricsConsumer.ConsumeMetrics(ctx, countMetrics)
 }
-

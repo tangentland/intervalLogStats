@@ -1,5 +1,5 @@
 type: count
-scope_name: otelcol/intervalLogStats
+#scope_name: otelcol/intervalLogStats
 
 status:
   class: connector

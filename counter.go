@@ -3,7 +3,7 @@
 
 package intervalLogStats //
 
-const scopeName = "otelcol/intervalLogStats"
+//const scopeName = "otelcol/intervalLogStats"
 
 import (
 	"context"
@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"go.opentelemetry.io/collector/pdata/pcommon"
-	"go.opentelemetry.io/collector/pdata/plog"
 	"go.opentelemetry.io/collector/pdata/pmetric"
 
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/pdatautil"
