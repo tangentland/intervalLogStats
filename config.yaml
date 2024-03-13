@@ -8,8 +8,9 @@ receivers:
         endpoint: 0.0.0.0:4318
 
 processors:
-  resourcedetectionprocessor:
-  attributesprocessor:
+  batch:
+#  resourcedetectionprocessor:
+#  attributesprocessor:
 #  transform/logs:
 #    log_statements:
 #      - context: log
@@ -21,15 +22,15 @@ exporters:
   debug:
 
 connectors:
-  example:
+  intervalLogStats:
 
 service:
   pipelines:
     traces:
       receivers: [otlp]
       processors: [batch]
-      exporters: [example]
+      exporters: [intervalLogStats]
     metrics:
-      receivers: [example]
+      receivers: [intervalLogStats]
       exporters: [debug]
 

@@ -2,6 +2,7 @@ package intervalLogStats
 
 import (
 	"context"
+	"github.com/tangentland/intervalLogStats/internal/metadata"
 
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/connector"
@@ -21,7 +22,7 @@ func NewFactory() connector.Factory {
 	return connector.NewFactory(
 		typeStr,
 		createDefaultConfig,
-		connector.WithTracesToMetrics(createTracesToMetricsConnector, component.StabilityLevelAlpha))
+		connector.WithLogsToMetrics(createLogsToMetrics, metadata.LogsToMetricsStability)
 }
 
 func createDefaultConfig() component.Config {
@@ -30,13 +31,38 @@ func createDefaultConfig() component.Config {
 	}
 }
 
-// createTracesToMetricsConnector defines the consumer type of the connector
-// We want to consume traces and export metrics, therefore, define nextConsumer as metrics, since consumer is the next component in the pipeline
-func createTracesToMetricsConnector(ctx context.Context, params connector.CreateSettings, cfg component.Config, nextConsumer consumer.Metrics) (connector.Traces, error) {
-	c, err := newConnector(params.Logger, cfg)
-	if err != nil {
-		return nil, err
+
+// createLogsToMetrics creates a logs to metrics connector based on provided config.
+func createLogsToMetrics(
+	_ context.Context,
+	set connector.CreateSettings,
+	cfg component.Config,
+	nextConsumer consumer.Metrics,
+) (connector.Logs, error) {
+	c := cfg.(*Config)
+
+	metricDefs := make(map[string]metricDef[ottllog.TransformContext], len(c.Logs))
+	for name, info := range c.Logs {
+		md := metricDef[ottllog.TransformContext]{
+			desc:  info.Description,
+			attrs: info.Attributes,
+		}
+		if len(info.Conditions) > 0 {
+			// Error checked in Config.Validate()
+			condition, _ := filterottl.NewBoolExprForLog(info.Conditions, filterottl.StandardLogFuncs(), ottl.PropagateError, set.TelemetrySettings)
+			md.condition = condition
+		}
+		metricDefs[name] = md
 	}
-	c.metricsConsumer = nextConsumer
-	return c, nil
+
+	return &count{
+		metricsConsumer: nextConsumer,
+		logsMetricDefs:  metricDefs,
+	}, nil
+}
+
+type metricDef[K any] struct {
+	condition expr.BoolExpr[K]
+	desc      string
+	attrs     []AttributeConfig
 }

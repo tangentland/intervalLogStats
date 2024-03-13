@@ -1,0 +1,13 @@
+type: count
+scope_name: otelcol/intervalLogStats
+
+status:
+  class: connector
+  stability:
+    development: [logs_to_metrics]
+  distributions: [contrib]
+  codeowners:
+    active: [tholley]
+
+tests:
+  config:

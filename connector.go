@@ -1,13 +1,17 @@
 package intervalLogStats
 
+const scopeName = "otelcol/intervalLogStats"
+
 import (
 	"context"
+	"errors"
+	"go.opentelemetry.io/collector/pdata/plog"
 	"go.uber.org/zap"
 
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/consumer"
 	"go.opentelemetry.io/collector/pdata/pmetric"
-	"go.opentelemetry.io/collector/pdata/ptrace"
+
 )
 
 // schema for connector
@@ -18,11 +22,15 @@ type connectorImp struct {
 	// Include these parameters if a specific implementation for the Start and Shutdown function are not needed
 	component.StartFunc
 	component.ShutdownFunc
+
+	metricsMetricDefs    map[string]metricDef[ottlmetric.TransformContext]
+	dataPointsMetricDefs map[string]metricDef[ottldatapoint.TransformContext]
+	logsMetricDefs       map[string]metricDef[ottllog.TransformContext]
 }
 
 // newConnector is a function to create a new connector
 func newConnector(logger *zap.Logger, config component.Config) (*connectorImp, error) {
-	logger.Info("Building exampleconnector connector")
+	logger.Info("Building intervalLogStats connector")
 	cfg := config.(*Config)
 
 	return &connectorImp{
@@ -31,33 +39,48 @@ func newConnector(logger *zap.Logger, config component.Config) (*connectorImp, e
 	}, nil
 }
 
+
 // Capabilities implements the consumer interface.
 func (c *connectorImp) Capabilities() consumer.Capabilities {
 	return consumer.Capabilities{MutatesData: false}
 }
 
-// ConsumeTraces method is called for each instance of a trace sent to the connector
-func (c *connectorImp) ConsumeTraces(ctx context.Context, td ptrace.Traces) error {
-	// loop through the levels of spans of the one trace consumed
-	for i := 0; i < td.ResourceSpans().Len(); i++ {
-		resourceSpan := td.ResourceSpans().At(i)
+// ConsumeLogs method is called for each instance of a log sent to the connector
+func (c *connectorImp) ConsumeLogs(ctx context.Context, ld plog.Logs) error {
+	var multiError error
+	countMetrics := pmetric.NewMetrics()
+	countMetrics.ResourceMetrics().EnsureCapacity(ld.ResourceLogs().Len())
+	for i := 0; i < ld.ResourceLogs().Len(); i++ {
+		resourceLog := ld.ResourceLogs().At(i)
+		counter := newCounter[ottllog.TransformContext](c.logsMetricDefs)
 
-		for j := 0; j < resourceSpan.ScopeSpans().Len(); j++ {
-			scopeSpan := resourceSpan.ScopeSpans().At(j)
+		for j := 0; j < resourceLog.ScopeLogs().Len(); j++ {
+			scopeLogs := resourceLog.ScopeLogs().At(j)
 
-			for k := 0; k < scopeSpan.Spans().Len(); k++ {
-				span := scopeSpan.Spans().At(k)
-				attrs := span.Attributes()
-				mapping := attrs.AsRaw()
-				for key, _ := range mapping {
-					if key == c.config.AttributeName {
-						// create metric only if span of trace had the specific attribute
-						metrics := pmetric.NewMetrics()
-						return c.metricsConsumer.ConsumeMetrics(ctx, metrics)
-					}
-				}
+			for k := 0; k < scopeLogs.LogRecords().Len(); k++ {
+				logRecord := scopeLogs.LogRecords().At(k)
+
+				lCtx := ottllog.NewTransformContext(logRecord, scopeLogs.Scope(), resourceLog.Resource())
+				multiError = errors.Join(multiError, counter.update(ctx, logRecord.Attributes(), lCtx))
 			}
 		}
+
+		if len(counter.counts) == 0 {
+			continue // don't add an empty resource
+		}
+
+		countResource := countMetrics.ResourceMetrics().AppendEmpty()
+		resourceLog.Resource().Attributes().CopyTo(countResource.Resource().Attributes())
+
+		countResource.ScopeMetrics().EnsureCapacity(resourceLog.ScopeLogs().Len())
+		countScope := countResource.ScopeMetrics().AppendEmpty()
+		countScope.Scope().SetName(scopeName)
+
+		counter.appendMetricsTo(countScope.Metrics())
 	}
-	return nil
+	if multiError != nil {
+		return multiError
+	}
+	return c.metricsConsumer.ConsumeMetrics(ctx, countMetrics)
 }
+
