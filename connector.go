@@ -27,7 +27,7 @@ type logStat struct {
 	// Include these parameters if a specific implementation for the Start and Shutdown function are not needed
 	StartFunc    *component.StartFunc
 	ShutdownFunc *component.ShutdownFunc
-	
+
 	metricsMetricDefs    map[string]metricDef[ottlmetric.TransformContext]
 	dataPointsMetricDefs map[string]metricDef[ottldatapoint.TransformContext]
 	logsMetricDefs       map[string]metricDef[ottllog.TransformContext]
