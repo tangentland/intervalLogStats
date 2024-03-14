@@ -29,7 +29,7 @@ func NewFactory() connector.Factory {
 
 func createDefaultConfig() component.Config {
 	return &Config{
-		AttributeName: defaultVal,
+		//AttributeName: defaultVal,
 	}
 }
 
@@ -40,7 +40,7 @@ func createLogsToMetrics(
 	cfg component.Config,
 	nextConsumer consumer.Metrics,
 ) (connector.Logs, error) {
-	c, err := newConnector(set.Logger, cfg)
+	c, err := newConnector(params.Logger, cfg)
 	if err != nil {
 		return nil, err
 	}
