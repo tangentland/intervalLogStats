@@ -3,6 +3,8 @@ package intervalLogStats
 import (
 	"context"
 	"errors"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlspan"
+	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlspanevent"
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.uber.org/zap"
 
@@ -14,6 +16,18 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottllog"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlmetric"
 )
+
+type count struct {
+	metricsConsumer consumer.Metrics
+	component.StartFunc
+	component.ShutdownFunc
+
+	spansMetricDefs      map[string]metricDef[ottlspan.TransformContext]
+	spanEventsMetricDefs map[string]metricDef[ottlspanevent.TransformContext]
+	metricsMetricDefs    map[string]metricDef[ottlmetric.TransformContext]
+	dataPointsMetricDefs map[string]metricDef[ottldatapoint.TransformContext]
+	logsMetricDefs       map[string]metricDef[ottllog.TransformContext]
+}
 
 // schema for connector
 type connectorImp struct {

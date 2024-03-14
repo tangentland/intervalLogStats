@@ -40,10 +40,11 @@ func createLogsToMetrics(
 	cfg component.Config,
 	nextConsumer consumer.Metrics,
 ) (connector.Logs, error) {
-	c, err := newConnector(params.Logger, cfg)
-	if err != nil {
-		return nil, err
-	}
+	//c, err := newConnector(params.Logger, cfg)
+	c := cfg.(*Config)
+	//if err != nil {
+	//	return nil, err
+	//}
 
 	metricDefs := make(map[string]metricDef[ottllog.TransformContext], len(c.Logs))
 	for name, info := range c.Logs {
