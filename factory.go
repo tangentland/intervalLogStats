@@ -10,7 +10,7 @@ import (
 
 //go:generate mdatagen metadata.yaml
 
-scope_name: otelcol/intervalLogStats
+const scope_name: otelcol/intervalLogStats
 
 import (
 	"context"

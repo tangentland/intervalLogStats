@@ -5,6 +5,13 @@ import (
 	"go.opentelemetry.io/collector/confmap"
 )
 
+const scope_name: otelcol/intervalLogStats
+
+import (
+	"fmt"
+	"go.opentelemetry.io/collector/confmap"
+)
+
 // Default metrics are emitted if no conditions are specified.
 const (
 	defaultMetricNameMetrics    = "metric.count"

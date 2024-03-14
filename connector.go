@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-scope_name: otelcol/intervalLogStats
+const scope_name: otelcol/intervalLogStats
 
 import (
 	"errors"
