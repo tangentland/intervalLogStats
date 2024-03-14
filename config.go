@@ -5,7 +5,7 @@ import (
 	"go.opentelemetry.io/collector/confmap"
 )
 
-const scope_name: otelcol/intervalLogStats
+const scope_name: "otelcol/intervalLogStats"
 
 import (
 	"fmt"
