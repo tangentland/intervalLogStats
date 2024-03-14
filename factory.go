@@ -2,13 +2,11 @@ package intervalLogStats
 
 import (
 	"context"
-	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl"
-
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/connector"
 	"go.opentelemetry.io/collector/consumer"
 
-	"github.com/open-telemetry/opentelemetry-collector-contrib/internal/filter/filterottl"
+	//"github.com/open-telemetry/opentelemetry-collector-contrib/internal/filter/filterottl"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottllog"
 )
 
@@ -53,11 +51,11 @@ func createLogsToMetrics(
 			desc:  info.Description,
 			attrs: info.Attributes,
 		}
-		if len(info.Conditions) > 0 {
-			// Error checked in Config.Validate()
-			condition, _ := filterottl.NewBoolExprForLog(info.Conditions, filterottl.StandardLogFuncs(), ottl.PropagateError, set.TelemetrySettings)
-			md.condition = condition
-		}
+		//if len(info.Conditions) > 0 {
+		//	// Error checked in Config.Validate()
+		//	condition, _ := filterottl.NewBoolExprForLog(info.Conditions, filterottl.StandardLogFuncs(), ottl.PropagateError, set.TelemetrySettings)
+		//	md.condition = condition
+		//}
 		metricDefs[name] = md
 	}
 
