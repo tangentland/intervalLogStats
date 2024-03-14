@@ -1,21 +1,8 @@
 package intervalLogStats
 
 import (
-	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl"
-	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottllog"
-	"go.opentelemetry.io/collector/component"
-	"go.opentelemetry.io/collector/connector"
-	"go.opentelemetry.io/collector/consumer"
-)
-
-//go:generate mdatagen metadata.yaml
-
-const scope_name: "otelcol/intervalLogStats"
-
-import (
 	"context"
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl"
-	"github.com/tangentland/intervalLogStats/internal/metadata"
 
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/connector"
