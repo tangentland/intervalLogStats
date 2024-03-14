@@ -1,9 +1,9 @@
 
 dist:
-name: otelcol-dev-bin
-description: Basic OpenTelemetry collector distribution for Developers
-output_path: /opt/opentel/collector
-otelcol_version: 0.96.0
+  name: cardinal_collector
+  description: Basic OpenTelemetry collector distribution for Developers
+  otelcol_version: 0.96.0
+  output_path: ./cardinal_collector
 
 receivers:
   - gomod: go.opentelemetry.io/collector/receiver/otlpreceiver v0.96.0
@@ -25,7 +25,7 @@ exporters:
 
 connectors:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/connector/spanmetricsconnector v0.96.0
-  - gomod: github.com/tangentland/intervalLogStats v0.1.14
+  - gomod: github.com/tangentland/intervalLogStats v0.1.15
 
 
 #replaces:

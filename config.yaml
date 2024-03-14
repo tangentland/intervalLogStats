@@ -12,46 +12,46 @@ receivers:
           allowed_origins:
             - "http://*"
             - "https://*"
+
 processors:
   batch:
-  transform:
-    log_statements:
-      - context: log
-        statements:
-         - set(attributes["service"], resource["service"]["name"] where resource["service"]["name"] != nil
-    metric_statements:
-      - context: metric
-        statements:
-          - set(attributes["service"], resource["service"]["name"] where resource["service"]["name"] != nil
-          - set(description, "Measures the duration of inbound HTTP requests") where name == "http.server.duration"
-  # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/826
-  filter/ottl:
-    error_mode: ignore
-    metrics:
-      metric:
-        - 'name == "queueSize"'
+#  transform:
+#    log_statements:
+#      - context: log
+#        statements:
+##         - set(attributes["service"], resource["service"]["name"] where resource["service"]["name"] != nil
+#    metric_statements:
+#      - context: metric
+#        statements:
+##          - set(attributes["service"], resource["service"]["name"] where resource["service"]["name"] != nil
+##          - set(description, "Measures the duration of inbound HTTP requests") where name == "http.server.duration"
+#  # we can remove when this is fixed: https://github.com/open-telemetry/opentelemetry-demo/issues/826
+#  filter/ottl:
+#    error_mode: ignore
+#    metrics:
+#      metric:
+#        - 'name == "queueSize"'
 
 #  resourcedetectionprocessor:
 #  attributesprocessor:
 #  transform/logs:
 #
 exporters:
-  # NOTE: Prior to v0.86.0 use the `logging` instead of `debug`.
   debug:
-  otlp:
-    endpoint: '{{ include "otel-demo.name" . }}-jaeger-collector:4317'
-    tls:
-      insecure: true
+#  otlp:
+#    endpoint: '{{ include "otel-demo.name" . }}-jaeger-collector:4317'
+#    tls:
+#      insecure: true
   # Create an exporter to Prometheus (metrics)
-  prometheus:
-    endpoint: "0.0.0.0:9464"
-    resource_to_telemetry_conversion:
-      enabled: true
-    enable_open_metrics: true
+#  prometheus:
+#    endpoint: "0.0.0.0:9464"
+#    resource_to_telemetry_conversion:
+#      enabled: true
+#    enable_open_metrics: true
 
 connectors:
   intervalLogStats:
-  spanmetrics:
+#  spanmetrics:
 
 service:
   pipelines:
@@ -60,12 +60,13 @@ service:
       processors: [ batch ]
       exporters: [ intervalLogStats ]
     metrics:
-      receivers: [ otlp, spanmetrics ]
-      processors: [ memory_limiter, filter/ottl, transform, batch ]
-      exporters: [ prometheus, logging ]
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [  debug ]
     metrics/logs:
       receivers: [intervalLogStats]
       exporters: [debug]
     traces:
-      processors: [ memory_limiter, batch ]
-      exporters: [ otlp, logging, spanmetrics ]
+      receivers: [ otlp ]
+      processors: [ batch ]
+      exporters: [ debug ]
