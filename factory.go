@@ -35,16 +35,12 @@ func createDefaultConfig() component.Config {
 
 // createLogsToMetrics creates a logs to metrics connector based on provided config.
 func createLogsToMetrics(
-	ctx context.Context,
-	params connector.CreateSettings,
+	_ context.Context,
+	set connector.CreateSettings,
 	cfg component.Config,
 	nextConsumer consumer.Metrics,
 ) (connector.Logs, error) {
-	//c, err := newConnector(params.Logger, cfg)
 	c := cfg.(*Config)
-	//if err != nil {
-	//	return nil, err
-	//}
 
 	metricDefs := make(map[string]metricDef[ottllog.TransformContext], len(c.Logs))
 	for name, info := range c.Logs {
@@ -59,12 +55,11 @@ func createLogsToMetrics(
 		//}
 		metricDefs[name] = md
 	}
-	var cnt = count.ConsumeLogs(consumer.Logs()){
-		consumeLogs: consumer.ConsumeLogs(ctx, c.Logs),
+
+	return &logStat{
 		metricsConsumer: nextConsumer,
 		logsMetricDefs:  metricDefs,
-	}
-	return &, nil
+	}, nil
 }
 
 type metricDef[K any] struct {

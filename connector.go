@@ -3,8 +3,6 @@ package intervalLogStats
 import (
 	"context"
 	"errors"
-	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlspan"
-	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlspanevent"
 	"go.opentelemetry.io/collector/pdata/plog"
 	"go.uber.org/zap"
 
@@ -17,53 +15,42 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlmetric"
 )
 
-type count struct {
-	component.Component
-	consumesLogs *consumer.ConsumeLogsFunc
-
-	metricsConsumer consumer.Metrics
-	component.StartFunc
-	component.ShutdownFunc
-
-	spansMetricDefs      map[string]metricDef[ottlspan.TransformContext]
-	spanEventsMetricDefs map[string]metricDef[ottlspanevent.TransformContext]
-	metricsMetricDefs    map[string]metricDef[ottlmetric.TransformContext]
-	dataPointsMetricDefs map[string]metricDef[ottldatapoint.TransformContext]
-	logsMetricDefs       map[string]metricDef[ottllog.TransformContext]
-}
-
 // schema for connector
-type connectorImp struct {
+type logStat struct {
+	component.Component
+	consumer.Logs
+
 	config          Config
 	metricsConsumer consumer.Metrics
 	logger          *zap.Logger
-	// Include these parameters if a specific implementation for the Start and Shutdown function are not needed
-	component.StartFunc
-	component.ShutdownFunc
 
+	// Include these parameters if a specific implementation for the Start and Shutdown function are not needed
+	StartFunc    *component.StartFunc
+	ShutdownFunc *component.ShutdownFunc
+	
 	metricsMetricDefs    map[string]metricDef[ottlmetric.TransformContext]
 	dataPointsMetricDefs map[string]metricDef[ottldatapoint.TransformContext]
 	logsMetricDefs       map[string]metricDef[ottllog.TransformContext]
 }
 
 // newConnector is a function to create a new connector
-func newConnector(logger *zap.Logger, config component.Config) (*connectorImp, error) {
+func newConnector(logger *zap.Logger, config component.Config) (*logStat, error) {
 	logger.Info("Building intervalLogStats connector")
 	cfg := config.(*Config)
 
-	return &connectorImp{
+	return &logStat{
 		config: *cfg,
 		logger: logger,
 	}, nil
 }
 
 // Capabilities implements the consumer interface.
-func (c *connectorImp) Capabilities() consumer.Capabilities {
+func (c *logStat) Capabilities() consumer.Capabilities {
 	return consumer.Capabilities{MutatesData: false}
 }
 
 // ConsumeLogs method is called for each instance of a log sent to the connector
-func (c *connectorImp) ConsumeLogs(ctx context.Context, ld plog.Logs) error {
+func (c *logStat) ConsumeLogs(ctx context.Context, ld plog.Logs) error {
 	var multiError error
 	countMetrics := pmetric.NewMetrics()
 	countMetrics.ResourceMetrics().EnsureCapacity(ld.ResourceLogs().Len())
