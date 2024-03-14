@@ -15,6 +15,8 @@ import (
 	"github.com/open-telemetry/opentelemetry-collector-contrib/pkg/ottl/contexts/ottlmetric"
 )
 
+const scopeName = "otelcol/intervalLogStats"
+
 // schema for connector
 type logStat struct {
 	component.Component
