@@ -59,11 +59,12 @@ func createLogsToMetrics(
 		//}
 		metricDefs[name] = md
 	}
-
-	return &count{
+	var cnt = count.ConsumeLogs(consumer.Logs()){
+		consumeLogs: consumer.ConsumeLogs(ctx, c.Logs),
 		metricsConsumer: nextConsumer,
 		logsMetricDefs:  metricDefs,
-	}, nil
+	}
+	return &, nil
 }
 
 type metricDef[K any] struct {

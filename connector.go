@@ -19,7 +19,7 @@ import (
 
 type count struct {
 	component.Component
-	consumer.Logs
+	consumesLogs *consumer.ConsumeLogsFunc
 
 	metricsConsumer consumer.Metrics
 	component.StartFunc
